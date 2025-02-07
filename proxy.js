@@ -18,7 +18,12 @@ app.get('/comics/*', async (req, res) => {
 
   try {
     // Make the request to the external server (getcomics.info)
-    const response = await axios.get(targetUrl);
+    const response = await axios.get(targetUrl, {
+      headers: {
+        // Add a User-Agent header to mimic a browser (helps to avoid blocking by some APIs)
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      }
+    });
 
     // Set the necessary CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');  // Allow any origin to access the data
@@ -29,12 +34,12 @@ app.get('/comics/*', async (req, res) => {
     res.json(response.data);  // Forward the data from the external API
 
   } catch (error) {
-    console.error('Error fetching data from the external API:', error);
+    console.error('Error fetching data from the external API:', error.response ? error.response.data : error.message);
 
-    // If something goes wrong, send a 500 error with detailed message
+    // If something goes wrong, send a 500 error with a detailed message
     res.status(500).send({
       message: 'Error fetching data from the external API',
-      error: error.message,
+      error: error.response ? error.response.data : error.message,
     });
   }
 });
